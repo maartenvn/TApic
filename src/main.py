@@ -56,30 +56,42 @@ def parse(image: List[List[Tuple[int]]]) -> str:
         (255, 255, 0): "§Yy",
         (127.5, 127.5, 0): "§YY",
         (0, 255, 255): "§Mm",
-        (0, 127.5, 127.5): "§MM"
+        (0, 127.5, 127.5): "§MM",
         (255, 0, 255): "§Pp",
-        (127.5, 0, 127.5): "§PP"
-        (255, 255, 255): "§Ww"
+        (127.5, 0, 127.5): "§PP",
+        (255, 255, 255): "§Ww",
         (127.5, 127.5, 127.5): "§WW"
+    }
+    mapping_map = {
+        0: {0: 0, 127.5: 0, 255: 0},
+        1: {0: 0, 127.5: 127.5, 255: 0},
+        2: {0: 0, 127.5: 127.5, 255: 255},
+        3: {0: 0, 127.5: 127.5, 255: 255}
     }
     s = ""
     for row in image:
         for pixel in row:
+            np = [0, 0, 0]
+            max_value = 0
             for i, value in enumerate(pixel):
                 if value > 255 / 2:
                     if value > 3 * 255 / 4:
-                        pixel[i] = 255
+                        np[i] = 3
+                        max_value = max([max_value, 255])
                     else:
-                        pixel[i] = 127.5
+                        np[i] = 2
+                        max_value = max([max_value, 127.5])
                 else:
                     if value > 255 / 4:
-                        pixel[i] = 127.5
+                        np[i] = 1
+                        max_value = max([max_value, 127.5])
                     else:
-                        pixel[i] = 0
+                        np[i] = 0
+            for i in np:
+                pixel[i] = mapping_map[np[1]][max_value]
             s += color_map[tuple(pixel)] + "0"
         s += '\n'
     return s.rstrip('\n')
-
 
 parser = argparse.ArgumentParser(description="Send a JPG/PNG image to the cammie messageboard")
 parser.add_argument("url", type=str, help="URL to a PNG/JPG image")
