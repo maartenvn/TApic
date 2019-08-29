@@ -75,14 +75,14 @@ def parse(image: List[List[Tuple[int]]]) -> str:
             max_value = 0
             for i, value in enumerate(pixel):
                 if value > 255 / 2:
-                    if value > 3 * 255 / 4 + 20 :
+                    if value > 3 * 255 / 4 :
                         np[i] = 3
                         max_value = max([max_value, 255])
                     else:
                         np[i] = 2
                         max_value = max([max_value, 127.5])
                 else:
-                    if value > 255 / 4 - 20:
+                    if value > 255 / 4:
                         np[i] = 1
                         max_value = max([max_value, 127.5])
                     else:
