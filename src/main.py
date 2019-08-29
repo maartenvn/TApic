@@ -47,20 +47,20 @@ def to_cammie(string: str):
 def parse(image: List[List[Tuple[int]]]) -> str:
     color_map = {
         (0, 0, 0): "§ZZ",
-        (255, 0, 0): "§Rr",
-        (127.5, 0, 0): "§RR",
-        (0, 255, 0): "§Gg",
-        (0, 127.5, 0): "§GG",
-        (0, 0, 255): "§Bb",
-        (0, 0, 127.5): "§BB",
-        (255, 255, 0): "§Yy",
-        (127.5, 127.5, 0): "§YY",
-        (0, 255, 255): "§Mm",
-        (0, 127.5, 127.5): "§MM",
-        (255, 0, 255): "§Pp",
-        (127.5, 0, 127.5): "§PP",
-        (255, 255, 255): "§Ww",
-        (127.5, 127.5, 127.5): "§WW"
+        (255, 0, 0): "§Zr",
+        (127.5, 0, 0): "§ZR",
+        (0, 255, 0): "§Zg",
+        (0, 127.5, 0): "§ZG",
+        (0, 0, 255): "§Zb",
+        (0, 0, 127.5): "§ZB",
+        (255, 255, 0): "§Zy",
+        (127.5, 127.5, 0): "§ZY",
+        (0, 255, 255): "§Zm",
+        (0, 127.5, 127.5): "§ZM",
+        (255, 0, 255): "§Zp",
+        (127.5, 0, 127.5): "§ZP",
+        (255, 255, 255): "§Zw",
+        (127.5, 127.5, 127.5): "§ZW"
     }
     mapping_map = {
         0: {0: 0, 127.5: 0, 255: 0},
@@ -75,14 +75,14 @@ def parse(image: List[List[Tuple[int]]]) -> str:
             max_value = 0
             for i, value in enumerate(pixel):
                 if value > 255 / 2:
-                    if value > 3 * 255 / 4 + 40 :
+                    if value > 3 * 255 / 4 + 20 :
                         np[i] = 3
                         max_value = max([max_value, 255])
                     else:
                         np[i] = 2
                         max_value = max([max_value, 127.5])
                 else:
-                    if value > 255 / 4 - 40:
+                    if value > 255 / 4 - 20:
                         np[i] = 1
                         max_value = max([max_value, 127.5])
                     else:
@@ -90,8 +90,6 @@ def parse(image: List[List[Tuple[int]]]) -> str:
             for i in range(len(np)):
                 pixel[i] = mapping_map[np[i]][max_value]
             s += color_map[tuple(pixel)] + "0"
-
-            print("My shit: " + str(np) + " --- The Shit: " + str(pixel))
         s += '\n'
     return s.rstrip('\n')
 
