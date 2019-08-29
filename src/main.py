@@ -75,21 +75,23 @@ def parse(image: List[List[Tuple[int]]]) -> str:
             max_value = 0
             for i, value in enumerate(pixel):
                 if value > 255 / 2:
-                    if value > 3 * 255 / 4:
+                    if value > 3 * 255 / 4 + 40 :
                         np[i] = 3
                         max_value = max([max_value, 255])
                     else:
                         np[i] = 2
                         max_value = max([max_value, 127.5])
                 else:
-                    if value > 255 / 4:
+                    if value > 255 / 4 - 40:
                         np[i] = 1
                         max_value = max([max_value, 127.5])
                     else:
                         np[i] = 0
-            for i in np:
-                pixel[i] = mapping_map[np[1]][max_value]
+            for i in range(len(np)):
+                pixel[i] = mapping_map[np[i]][max_value]
             s += color_map[tuple(pixel)] + "0"
+
+            print("My shit: " + str(np) + " --- The Shit: " + str(pixel))
         s += '\n'
     return s.rstrip('\n')
 
