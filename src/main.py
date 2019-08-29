@@ -46,23 +46,36 @@ def to_cammie(string: str):
 
 def parse(image: List[List[Tuple[int]]]) -> str:
     color_map = {
-        (0, 0, 0): "§Zz",
+        (0, 0, 0): "§ZZ",
         (255, 0, 0): "§Rr",
+        (127.5, 0, 0): "§RR",
         (0, 255, 0): "§Gg",
+        (0, 127.5, 0): "§GG",
         (0, 0, 255): "§Bb",
+        (0, 0, 127.5): "§BB",
         (255, 255, 0): "§Yy",
+        (127.5, 127.5, 0): "§YY",
         (0, 255, 255): "§Mm",
+        (0, 127.5, 127.5): "§MM"
         (255, 0, 255): "§Pp",
+        (127.5, 0, 127.5): "§PP"
         (255, 255, 255): "§Ww"
+        (127.5, 127.5, 127.5): "§WW"
     }
     s = ""
     for row in image:
         for pixel in row:
             for i, value in enumerate(pixel):
                 if value > 255 / 2:
-                    pixel[i] = 255
+                    if value > 3 * 255 / 4:
+                        pixel[i] = 255
+                    else:
+                        pixel[i] = 127.5
                 else:
-                    pixel[i] = 0
+                    if value > 255 / 4:
+                        pixel[i] = 127.5
+                    else:
+                        pixel[i] = 0
             s += color_map[tuple(pixel)] + "0"
         s += '\n'
     return s.rstrip('\n')
