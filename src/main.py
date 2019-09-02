@@ -35,7 +35,7 @@ def to_cammie(string: str):
     """
     base = base64.b64encode(string.encode())
     requests.post(url="http://10.0.5.42:8000", headers={"X-Messages": base})
-    print("Send!")
+    print("Sent!")
 
 
 def parse(image: List[List[Tuple[int]]], compressed: bool = False) -> str:
