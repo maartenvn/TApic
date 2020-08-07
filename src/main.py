@@ -1,9 +1,33 @@
 import argparse
-import requests
+from requests import get, post
 import base64
-from urllib import request
-from wand.image import Image
 from typing import *
+from PIL import Image
+from io import BytesIO
+
+LUT = [
+    (255, 255, 255, "§Zw"),
+    (170, 170, 170, "§ZW"),
+    (85, 85, 85, "$Zz"),
+    (0, 0, 0, "§ZZ"),
+    (255, 255, 85, "§Zy"),
+    (0, 170, 0, "§ZG"),
+    (85, 255, 85, "$Zg"),
+    (255, 85, 85, "§Zr"),
+    (170, 0, 0, "§ZR"),
+    (170, 85, 0, "§ZY"),
+    (170, 0, 170, "§ZP"),
+    (255, 85, 255, "§Zp"),
+    (85, 255, 255, "§Zm"),
+    (0, 170, 170, "§ZM"),
+    (0, 0, 170, "§ZB"),
+    (85, 85, 255, "§Zb"),
+]
+
+
+def find_nearest_color(color: tuple) -> tuple:
+    scores = [i for i in map(lambda x: sum([(x[i] - color[i]) ** 2 for i in [0, 1, 2]]), LUT)]
+    return LUT[scores.index(min(scores))]
 
 
 def to_rgb(url: str):
@@ -11,22 +35,11 @@ def to_rgb(url: str):
     Convert an image to 16x16 and return a 2-dimensional array with [r, g, b]-list.
     """
 
-    with request.urlopen(url) as file:
-        with Image(file=file) as img:
-            img.resize(48, 24)
-            img.save(filename="test.png")
-            # Get image byte blob.
-            blob = img.make_blob(format="RGB")
-            # Map with rgb-values for each pixel.
-            # 2 dimensions represent the rows.
-            pixels = []
-            for y in range(0, img.height):
-                row = []
-                for x in range(0, img.width * 3, 3):
-                    loc = x + (img.width * y * 3)
-                    row.append([blob[loc], blob[loc + 1], blob[loc + 2]])
-                pixels.append(row)
-            return pixels
+    response = get(url)
+    img = Image.open(BytesIO(response.content))
+    img = img.resize((48, 24), Image.ANTIALIAS)
+    img.save("test.png")
+    return img
 
 
 def to_cammie(string: str):
@@ -34,60 +47,35 @@ def to_cammie(string: str):
     Send the color-string to cammie.
     """
     base = base64.b64encode(string.encode())
-    requests.post(url="http://10.0.5.42:8000", headers={"X-Messages": base})
+    post(url="http://10.0.5.42:8000", headers={"X-Messages": base})
     print("Sent!")
 
 
-def parse(image: List[List[Tuple[int]]], compressed: bool = False) -> str:
-    color_map = {
-        (0, 0, 0): "§ZZ",
-        (255, 0, 0): "§Zr",
-        (127.5, 0, 0): "§ZR",
-        (0, 255, 0): "§Zg",
-        (0, 127.5, 0): "§ZG",
-        (0, 0, 255): "§Zb",
-        (0, 0, 127.5): "§ZB",
-        (255, 255, 0): "§Zy",
-        (127.5, 127.5, 0): "§ZY",
-        (0, 255, 255): "§Zm",
-        (0, 127.5, 127.5): "§ZM",
-        (255, 0, 255): "§Zp",
-        (127.5, 0, 127.5): "§ZP",
-        (255, 255, 255): "§Zw",
-        (127.5, 127.5, 127.5): "§ZW"
-    }
-    mapping_map = {
-        0: {0: 0, 127.5: 0, 255: 0},
-        1: {0: 0, 127.5: 127.5, 255: 0},
-        2: {0: 0, 127.5: 127.5, 255: 255},
-        3: {0: 0, 127.5: 127.5, 255: 255}
-    }
+def add_error(image, pos, error, percent):
+    if 0 <= pos[0] < image.width and 0 <= pos[1] < image.height:
+        pixel = image.getpixel(pos)
+        image.putpixel(pos, tuple([max(0, min(255, round(pixel[i] + error[i] * percent))) for i in [0, 1, 2]]))
+
+
+def parse(image: Image, compressed: bool = False) -> str:
     s = []
-    for row in image:
+    for y in range(0, image.height):
         temp_s = ""
-        for pixel in row:
-            np = [0, 0, 0]
-            max_value = 0
-            for i, value in enumerate(pixel):
-                if value > 255 / 2:
-                    if value > 3 * 255 / 4:
-                        np[i] = 3
-                        max_value = max([max_value, 255])
-                    else:
-                        np[i] = 2
-                        max_value = max([max_value, 127.5])
-                else:
-                    if value > 255 / 4:
-                        np[i] = 1
-                        max_value = max([max_value, 127.5])
-                    else:
-                        np[i] = 0
-            for i in range(len(np)):
-                pixel[i] = mapping_map[np[i]][max_value]
-            temp_s += color_map[tuple(pixel)] + "0"
+        for x in range(0, image.width):
+            op = image.getpixel((x, y))
+            np = find_nearest_color(op)
+            error = tuple([op[i] - np[i] for i in [0, 1, 2]])
+            image.putpixel((x, y), (np[0], np[1], np[2]))
+            add_error(image, (x + 1, y), error, 7 / 16)
+            add_error(image, (x - 1, y + 1), error, 3 / 16)
+            add_error(image, (x, y + 1), error, 5 / 16)
+            add_error(image, (x + 1, y + 1), error, 1 / 16)
+            temp_s += np[3] + ' '
         s.append(temp_s)
     if compressed:
         s = compress(s)
+    image.save('test2.png')
+    image.close()
     return "\n".join(s)
 
 
