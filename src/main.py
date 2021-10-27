@@ -8,11 +8,11 @@ from io import BytesIO
 LUT = [
     (255, 255, 255, "§Zw"),
     (170, 170, 170, "§ZW"),
-    (85, 85, 85, "$Zz"),
+    (85, 85, 85, "§Zz"),
     (0, 0, 0, "§ZZ"),
     (255, 255, 85, "§Zy"),
     (0, 170, 0, "§ZG"),
-    (85, 255, 85, "$Zg"),
+    (85, 255, 85, "§Zg"),
     (255, 85, 85, "§Zr"),
     (170, 0, 0, "§ZR"),
     (170, 85, 0, "§ZY"),
@@ -70,7 +70,7 @@ def parse(image: Image, compressed: bool = False) -> str:
             add_error(image, (x - 1, y + 1), error, 3 / 16)
             add_error(image, (x, y + 1), error, 5 / 16)
             add_error(image, (x + 1, y + 1), error, 1 / 16)
-            temp_s += np[3] + ' '
+            temp_s += np[3] + '#'
         s.append(temp_s)
     if compressed:
         s = compress(s)
