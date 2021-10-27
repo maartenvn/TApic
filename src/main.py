@@ -76,7 +76,7 @@ def parse(image: Image, compressed: bool = False) -> str:
         s = compress(s)
     image.save('test2.png')
     image.close()
-    return "\n".join(s)
+    return "".join(s)
 
 
 def compress(strings: List[str]) -> List[str]:
