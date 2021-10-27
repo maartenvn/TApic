@@ -37,7 +37,7 @@ def to_rgb(url: str):
 
     response = get(url)
     img = Image.open(BytesIO(response.content))
-    img = img.resize((48, 24), Image.ANTIALIAS)
+    img = img.resize((80, 24), Image.ANTIALIAS)
     img.save("test.png")
     return img
 
